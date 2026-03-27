@@ -1,0 +1,35 @@
+<div *ngIf="loading">讀取中…</div>
+
+<div class="page" *ngIf="!loading && survey; else notFound">
+  <h2 class="h1">確認答案</h2>
+  <p style="font-weight:700;">{{ survey.title }}</p>
+
+  <p class="muted">
+    期間：{{ survey.startTime | date:'yyyy/MM/dd HH:mm' }}
+    ～ {{ survey.endTime | date:'yyyy/MM/dd HH:mm' }}
+  </p>
+
+  <hr class="hr" />
+
+  <div class="card q-card" *ngFor="let q of survey.questions; let i = index">
+    <div class="q-meta">
+      <div class="q-no">Q{{ i + 1 }}</div>
+      <div class="q-title">
+        {{ q.title }}
+        <span class="req" *ngIf="q.isRequired === 1">*</span>
+      </div>
+    </div>
+
+    <div>{{ formatAnswer(q) }}</div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" (click)="backEdit()">回上頁修改</button>
+    <button class="btn btn-primary" (click)="submit()">送出</button>
+  </div>
+</div>
+
+<ng-template #notFound>
+  <p>找不到這份問卷。</p>
+  <a class="link" routerLink="/surveys">回清單</a>
+</ng-template>

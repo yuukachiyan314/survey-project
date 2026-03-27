@@ -1,0 +1,9 @@
+package com.example.surveyapi.repository;
+
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.surveyapi.entity.Question;
+
+public interface QuestionRepository extends JpaRepository<Question, Long> {
+    List<Question> findByQuestionnaireIdOrderBySortOrderAsc(Long questionnaireId);
+}

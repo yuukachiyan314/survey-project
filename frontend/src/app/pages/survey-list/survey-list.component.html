@@ -1,0 +1,27 @@
+<div class="page">
+  <h2 class="h1">問卷清單</h2>
+
+  <div class="card" *ngFor="let s of surveys">
+    <h3>{{ s.title }}</h3>
+    <p class="muted">{{ s.description }}</p>
+    <p class="muted">
+      期間：{{ s.startTime | date:'yyyy/MM/dd HH:mm' }} ～ {{ s.endTime | date:'yyyy/MM/dd HH:mm' }}
+    </p>
+    <p *ngIf="isClosed(s)" class="req">已截止</p>
+
+    <a class="link" [routerLink]="['/surveys', s.id]">開始填寫</a>
+  </div>
+</div>
+
+
+<!-- <h2>問卷清單</h2>
+
+<div *ngFor="let s of surveys" style="border:1px solid #ddd; padding:12px; margin:12px 0;">
+  <h3>{{ s.title }}</h3>
+  <p>{{ s.description }}</p>
+  <p>期間：{{ s.startDate }} ～ {{ s.endDate }}</p>
+  <p *ngIf="isClosed(s)" style="color:#b00;">已截止</p>
+
+  <a [routerLink]="['/surveys', s.id]">開始填寫</a>
+</div> -->
+<!--  -->

@@ -1,0 +1,65 @@
+<div *ngIf="loading">讀取中…</div>
+
+<div class="page" *ngIf="!loading && survey; else notFound">
+  <h2 class="h1">{{ survey.title }}</h2>
+
+  <p class="muted">{{ survey.description }}</p>
+
+  <p class="muted">
+    期間：
+    {{ survey.startTime | date:'yyyy/MM/dd HH:mm' }}
+    ～ {{ survey.endTime | date:'yyyy/MM/dd HH:mm' }}
+  </p>
+
+  <hr class="hr" />
+
+  <div class="card q-card" *ngFor="let q of survey.questions; let i = index">
+    <div class="q-meta">
+      <div class="q-no">Q{{ i + 1 }}</div>
+      <div class="q-title">
+        {{ q.title }}
+        <span class="req" *ngIf="q.isRequired === 1">*</span>
+      </div>
+    </div>
+
+    <!-- 單選 -->
+    <div *ngIf="q.questionType === 'single'">
+      <label class="option" *ngFor="let op of q.options">
+        <input
+          type="radio"
+          [name]="'q_' + q.id"
+          [value]="op.id"
+          [(ngModel)]="answers[q.id]"
+        />
+        {{ op.optionText }}
+      </label>
+    </div>
+
+    <!-- 複選 -->
+    <div *ngIf="q.questionType === 'multiple'">
+      <label class="option" *ngFor="let op of q.options">
+        <input
+          type="checkbox"
+          [checked]="isChecked(q, op.id)"
+          (change)="toggleCheckbox(q, op.id, $any($event.target).checked)"
+        />
+        {{ op.optionText }}
+      </label>
+    </div>
+
+    <!-- 簡答 -->
+    <div *ngIf="q.questionType === 'text'">
+      <textarea rows="3" [(ngModel)]="answers[q.id]"></textarea>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" (click)="goConfirm()">預覽 / 確認</button>
+    <a class="link" routerLink="/surveys">回清單</a>
+  </div>
+</div>
+
+<ng-template #notFound>
+  <p>找不到這份問卷。</p>
+  <a class="link" routerLink="/surveys">回清單</a>
+</ng-template>

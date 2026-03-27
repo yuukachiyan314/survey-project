@@ -1,0 +1,39 @@
+.page { max-width: 860px; margin: 28px auto; padding: 0 16px; font-family: system-ui,-apple-system,"Segoe UI",Arial,sans-serif; line-height: 1.6; }
+.card { background:#fff; border:1px solid #e6e6e6; border-radius:12px; padding:18px; margin:14px 0; }
+.h1 { font-size: 28px; margin: 0 0 12px; }
+.muted { color:#666; font-size:14px; }
+.hr { height:1px; background:#eee; border:0; margin:14px 0; }
+.q-title { font-weight:700; margin-bottom:6px; }
+.option { display:flex; gap:10px; align-items:center; margin:6px 0; }
+textarea { width:100%; max-width:720px; padding:10px 12px; border:1px solid #dcdcdc; border-radius:10px; outline:none; }
+textarea:focus { border-color:#7aa7ff; }
+.btn { border:1px solid #d0d0d0; background:#f7f7f7; padding:10px 14px; border-radius:10px; cursor:pointer; }
+.btn:hover { background:#efefef; }
+.btn-primary { background:#1f6feb; border-color:#1f6feb; color:#fff; }
+.btn-primary:hover { background:#1b5fd0; }
+.link { color:#1f6feb; text-decoration:none; }
+.link:hover { text-decoration:underline; }
+.req { color:#d10000; font-weight:700; }
+/* === Survey Form polish === */
+.q-card { padding: 18px; }
+
+.q-meta { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.q-no { font-weight:700; color:#666; font-size:13px; }
+
+.option { padding: 6px 0; }
+.option input { transform: translateY(1px); }
+
+textarea {
+  background: #fff;
+}
+
+.actions {
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin-top:16px;
+}
+
+.btn-primary {
+  box-shadow: 0 6px 16px rgba(31,111,235,.18);
+}

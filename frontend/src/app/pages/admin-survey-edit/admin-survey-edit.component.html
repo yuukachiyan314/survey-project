@@ -1,0 +1,57 @@
+<h2>後台｜{{ isNew ? '新增問卷' : '修改問卷' }}</h2>
+
+<div style="max-width: 640px;">
+  <p>
+    <a routerLink="/admin/surveys">← 回後台清單</a>
+  </p>
+
+  <div style="border:1px solid #ddd; padding:12px;">
+    <div style="margin:10px 0;">
+      <div>問卷標題</div>
+      <input style="width:100%;" [(ngModel)]="title" />
+    </div>
+
+    <div style="margin:10px 0;">
+      <div>說明</div>
+      <textarea rows="2" style="width:100%;" [(ngModel)]="description"></textarea>
+    </div>
+
+    <div style="margin:10px 0; display:flex; gap:12px;">
+      <div style="flex:1;">
+        <div>開始日期</div>
+        <input type="date" style="width:100%;" [(ngModel)]="startDate" />
+      </div>
+      <div style="flex:1;">
+        <div>結束日期</div>
+        <input type="date" style="width:100%;" [(ngModel)]="endDate" />
+      </div>
+    </div>
+
+    <hr />
+
+    <h3>題目 1（先做一題版本）</h3>
+
+    <div style="margin:10px 0;">
+      <div>題目文字</div>
+      <input style="width:100%;" [(ngModel)]="qText" />
+    </div>
+
+    <div style="margin:10px 0;">
+      <div>題型</div>
+      <select [(ngModel)]="qType">
+        <option value="single">單選</option>
+        <option value="multiple">複選</option>
+        <option value="text">簡答</option>
+      </select>
+    </div>
+
+    <div *ngIf="qType !== 'text'" style="margin:10px 0;">
+      <div>選項（固定先 3 個）</div>
+      <div style="margin:6px 0;"><input style="width:100%;" [(ngModel)]="op1" /></div>
+      <div style="margin:6px 0;"><input style="width:100%;" [(ngModel)]="op2" /></div>
+      <div style="margin:6px 0;"><input style="width:100%;" [(ngModel)]="op3" /></div>
+    </div>
+
+    <button (click)="save()">儲存</button>
+  </div>
+</div>

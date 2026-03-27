@@ -1,0 +1,22 @@
+# Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Java / Gradle
+backend/.gradle/
+backend/build/
+backend/target/
+backend/bin/
+
+# IDE
+**/.vscode/
+**/.idea/
+backend/.classpath
+backend/.project
+backend/.settings/
+
+# Secrets
+.env
+**/application-local.properties
+**/application-local.yml

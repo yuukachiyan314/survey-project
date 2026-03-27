@@ -1,0 +1,42 @@
+<div *ngIf="loading">讀取中…</div>
+
+<div class="page" *ngIf="!loading && survey; else notFound">
+  <h2 class="h1">統計結果</h2>
+  <p style="font-weight:700;">{{ survey.title }}</p>
+  <p class="muted">回覆份數：{{ total }}</p>
+
+  <hr class="hr" />
+
+  <div class="card" *ngFor="let q of survey.questions">
+    <div class="q-title">{{ q.title }}</div>
+
+    <!-- 選擇題 -->
+
+    <div *ngIf="q.questionType !== 'text'">
+  <canvas
+   [id]="'chart-' + q.id"
+   style="max-width: 520px;height: 260px;">
+  </canvas>
+   <!--  <div *ngIf="q.questionType !== 'text'">
+      <div *ngFor="let oid of optionIds(q)">
+        {{ optionText(q, oid) }}：{{ counts[q.id]?.[oid] ?? 0 }}
+      </div>
+    </div> -->
+
+</div>
+    <!-- 簡答 -->
+    <div *ngIf="q.questionType === 'text'">
+      <div *ngIf="(texts[q.id]?.length ?? 0) === 0">(目前沒有簡答回覆)</div>
+      <ul>
+        <li *ngFor="let t of (texts[q.id] || [])">{{ t }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <a class="link" routerLink="/surveys">回問卷清單</a>
+</div>
+
+<ng-template #notFound>
+  <p>找不到這份問卷。</p>
+  <a class="link" routerLink="/surveys">回問卷清單</a>
+</ng-template>
