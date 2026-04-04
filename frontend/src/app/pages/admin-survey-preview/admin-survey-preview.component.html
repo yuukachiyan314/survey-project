@@ -1,0 +1,40 @@
+<div class="page">
+  <div class="card">
+    <div class="h1">後台｜問卷預覽</div>
+
+    <div class="actions">
+      <a class="link" [routerLink]="['/admin/surveys', id, 'edit']">← 回去設定發布／基本資料</a>
+      <a class="link" routerLink="/admin/surveys">回列表</a>
+      <a class="link" [routerLink]="['/surveys', id]">前台預覽</a>
+    </div>
+
+    <div *ngIf="loading" class="muted">載入中…</div>
+  </div>
+
+  <div *ngIf="!loading && full" class="card">
+    <div class="h1" style="font-size:22px;">{{ full.title }}</div>
+    <div class="muted" *ngIf="full.description">{{ full.description }}</div>
+    <div class="muted">期間：{{ full.startTime }} ～ {{ full.endTime }}</div>
+
+    <hr class="hr" />
+
+    <div *ngFor="let q of full.questions" class="card q-card">
+      <div class="q-meta">
+        <span class="q-no">第 {{ q.sortOrder }} 題</span>
+        <span class="req" *ngIf="q.isRequired===1">必填</span>
+        <span class="muted">({{ q.questionType }})</span>
+      </div>
+
+      <div class="q-title">{{ q.title }}</div>
+
+      <div *ngIf="q.questionType !== 'text'">
+        <div class="option" *ngFor="let o of q.options">
+          <span class="muted">{{ o.sortOrder }}.</span>
+          <span>{{ o.optionText }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="q.questionType === 'text'" class="muted">（簡答題）</div>
+    </div>
+  </div>
+</div>

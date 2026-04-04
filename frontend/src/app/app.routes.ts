@@ -7,6 +7,7 @@ import { SurveyDoneComponent } from './pages/survey-done/survey-done.component';
 import { SurveyResultsComponent } from './pages/survey-results/survey-results.component';
 import { AdminSurveyListComponent } from './pages/admin-survey-list/admin-survey-list.component';
 import { AdminSurveyEditComponent } from './pages/admin-survey-edit/admin-survey-edit.component';
+import { AdminSurveyPreviewComponent } from './pages/admin-survey-preview/admin-survey-preview.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'surveys', pathMatch: 'full' },
@@ -18,4 +19,5 @@ export const routes: Routes = [
   { path: 'admin/surveys', component: AdminSurveyListComponent },
   { path: 'admin/surveys/new', component: AdminSurveyEditComponent },
   { path: 'admin/surveys/:id/edit', component: AdminSurveyEditComponent },
+  { path: 'admin/surveys/:id/preview', component: AdminSurveyPreviewComponent },
 ];

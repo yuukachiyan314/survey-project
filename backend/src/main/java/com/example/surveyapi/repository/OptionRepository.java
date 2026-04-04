@@ -6,4 +6,5 @@ import com.example.surveyapi.entity.Option;
 
 public interface OptionRepository extends JpaRepository<Option, Long> {
     List<Option> findByQuestionIdInOrderByQuestionIdAscSortOrderAsc(List<Long> questionIds);
+    List<Option> findByQuestionIdOrderBySortOrderAsc(Long questionId);
 }

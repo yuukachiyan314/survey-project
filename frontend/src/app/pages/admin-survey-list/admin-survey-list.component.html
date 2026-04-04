@@ -1,15 +1,30 @@
-<h2>後台｜問卷管理</h2>
+<div class="page">
+  <div class="card">
+    <div class="h1">後台｜問卷管理</div>
 
-<p>
-  <a routerLink="/surveys">去前台問卷清單</a>
-</p>
-<p><a routerLink="/admin/surveys/new">＋ 新增問卷</a></p>
-<div *ngFor="let s of surveys" style="border:1px solid #ddd; padding:12px; margin:12px 0;">
-  <h3>{{ s.title }}</h3>
-  <p>{{ s.description }}</p>
-  <p>期間：{{ s.startDate }} ～ {{ s.endDate }}</p>
+    <div class="actions">
+      <a class="link" routerLink="/surveys">去前台問卷清單</a>
+      <a class="link" routerLink="/admin/surveys/new">＋ 新增問卷</a>
+    </div>
+  </div>
 
-  <button (click)="remove(s.id)">刪除</button>
-  <a style="margin-left:12px;" [routerLink]="['/admin/surveys', s.id, 'edit']">編輯</a>
-  <a style="margin-left:12px;" [routerLink]="['/surveys', s.id, 'results']">看統計</a>
+  <div *ngFor="let s of surveys" class="card">
+    <div class="q-title" style="font-size:18px;">{{ s.title }}</div>
+    <div class="muted" *ngIf="s.description">{{ s.description }}</div>
+
+    <div class="muted">
+      期間：{{ s.startTime | date:'yyyy-MM-dd HH:mm' }} ～ {{ s.endTime | date:'yyyy-MM-dd HH:mm' }}
+    </div>
+
+    <div class="muted">
+      狀態：<b>{{ s.isPublished === 1 ? '已發布' : '未發布' }}</b>
+    </div>
+
+    <div class="actions">
+      <button class="btn" (click)="remove(s.id)">刪除</button>
+      <a class="link" [routerLink]="['/admin/surveys', s.id, 'edit']">編輯</a>
+      <a class="link" [routerLink]="['/admin/surveys', s.id, 'preview']">預覽</a>
+      <a class="link" [routerLink]="['/surveys', s.id, 'results']">看統計</a>
+    </div>
+  </div>
 </div>

@@ -1,120 +1,244 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { QuestionType } from '../../models/questionnaire.dto';
-import { SurveyService, Survey } from '../../data/survey.service';
+import { AdminService } from '../../data/admin.service';
+import { QuestionnaireDto } from '../../models/questionnaire.dto';
+
+type QuestionType = 'single' | 'multiple' | 'text';
 
 @Component({
   selector: 'app-admin-survey-edit',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './admin-survey-edit.component.html',
 })
-export class AdminSurveyEditComponent {
+export class AdminSurveyEditComponent implements OnInit {
   isNew = true;
+  id?: number;
 
-  // 基本資料
-  id = '';
   title = '';
-  description = '';
-  startDate = '';
-  endDate = '';
+  description: string | null = null;
+  isPublished = 0;
 
-  // 先做 1 題（能交）
-  qText = '';
-  qType: QuestionType = 'single';
+  // datetime-local（不含秒）
+  startTimeInput = '';
+  endTimeInput = '';
 
-  // 選項（單選/複選才用）
-  op1 = '選項1';
-  op2 = '選項2';
-  op3 = '選項3';
+  loading = false;
+
+  // ===== 題目設計（只用在新增 new）=====
+  questions: {
+    title: string;
+    questionType: QuestionType;
+    isRequired: number; // 0/1
+    sortOrder: number;
+    options: { optionText: string; sortOrder: number }[];
+  }[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private surveyService: SurveyService,
-  ) {
-    const id = this.route.snapshot.paramMap.get('id');
+    private adminService: AdminService,
+  ) {}
 
-    if (id) {
-      // edit
+  ngOnInit(): void {
+    const idParam = this.route.snapshot.paramMap.get('id');
+
+    if (idParam) {
       this.isNew = false;
-      const s = this.surveyService.getSurveyById(id);
-      if (s) {
-        this.id = s.id;
-        this.title = s.title;
-        this.description = s.description;
-        this.startDate = s.startDate;
-        this.endDate = s.endDate;
-
-        const q = s.questions[0];
-        if (q) {
-          this.qText = q.text;
-          this.qType = q.type;
-
-          if (q.options && q.options.length > 0)
-            this.op1 = q.options[0].text ?? this.op1;
-          if (q.options && q.options.length > 1)
-            this.op2 = q.options[1].text ?? this.op2;
-          if (q.options && q.options.length > 2)
-            this.op3 = q.options[2].text ?? this.op3;
-        }
-      }
+      this.id = Number(idParam);
+      this.load();
     } else {
-      // new
       this.isNew = true;
-      this.id = `s${Date.now()}`; // 簡單產生一個不重複 id
-      this.title = '';
-      this.description = '';
-      this.startDate = new Date().toISOString().slice(0, 10);
-      this.endDate = '2026-12-31';
-      this.qText = '';
-      this.qType = 'single';
+
+      const now = new Date();
+      this.startTimeInput = this.toDatetimeLocal(now);
+      this.endTimeInput = '2026-12-31T23:59';
+      this.isPublished = 0;
+
+      this.questions = [this.makeQuestion()];
     }
+  }
+
+  private makeQuestion() {
+    const idx = this.questions.length + 1;
+    return {
+      title: '',
+      questionType: 'single' as const,
+      isRequired: 1,
+      sortOrder: idx,
+      options: [
+        { optionText: '選項1', sortOrder: 1 },
+        { optionText: '選項2', sortOrder: 2 },
+        { optionText: '選項3', sortOrder: 3 },
+      ],
+    };
+  }
+
+  addQuestion() {
+    this.questions.push(this.makeQuestion());
+    this.reindex();
+  }
+
+  removeQuestion(i: number) {
+    this.questions.splice(i, 1);
+    this.reindex();
+  }
+
+  addOption(qi: number) {
+    const opts = this.questions[qi].options;
+    opts.push({
+      optionText: `選項${opts.length + 1}`,
+      sortOrder: opts.length + 1,
+    });
+    this.reindex();
+  }
+
+  removeOption(qi: number, oi: number) {
+    this.questions[qi].options.splice(oi, 1);
+    this.reindex();
+  }
+
+  onTypeChange(qi: number) {
+    const q = this.questions[qi];
+    if (q.questionType === 'text') {
+      q.options = [];
+    } else if (!q.options || q.options.length === 0) {
+      q.options = [
+        { optionText: '選項1', sortOrder: 1 },
+        { optionText: '選項2', sortOrder: 2 },
+        { optionText: '選項3', sortOrder: 3 },
+      ];
+    }
+    this.reindex();
+  }
+
+  private reindex() {
+    this.questions.forEach((q, idx) => {
+      q.sortOrder = idx + 1;
+      q.options?.forEach((o, j) => (o.sortOrder = j + 1));
+    });
+  }
+
+  load() {
+    if (!this.id) return;
+
+    this.loading = true;
+    this.adminService.getQuestionnaire(this.id).subscribe({
+      next: (q) => {
+        this.title = q.title ?? '';
+        this.description = q.description ?? null;
+        this.isPublished = Number(q.isPublished ?? 0);
+
+        this.startTimeInput = this.stripSeconds(q.startTime);
+        this.endTimeInput = this.stripSeconds(q.endTime);
+
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+        alert('讀取問卷失敗');
+      },
+    });
   }
 
   save() {
-    // 最小驗證
-    if (!this.title.trim()) {
-      alert('請填問卷標題');
-      return;
-    }
-    if (!this.startDate || !this.endDate) {
-      alert('請填開始/結束日期');
-      return;
-    }
-    if (!this.qText.trim()) {
-      alert('請填第一題題目');
+    if (!this.title.trim()) return alert('請填問卷標題');
+    if (!this.startTimeInput || !this.endTimeInput)
+      return alert('請填開始/結束時間');
+
+    // ===== 新增：走 full-create（含題目）=====
+    if (this.isNew) {
+      if (!this.questions.length) return alert('至少要有一題');
+
+      for (const q of this.questions) {
+        if (!q.title.trim()) return alert('題目標題不能空白');
+        if (
+          q.questionType !== 'text' &&
+          (!q.options || q.options.length === 0)
+        ) {
+          return alert('選擇題至少要有一個選項');
+        }
+        if (q.questionType !== 'text') {
+          for (const o of q.options) {
+            if (!o.optionText.trim()) return alert('選項文字不能空白');
+          }
+        }
+      }
+
+      const fullPayload = {
+        title: this.title.trim(),
+        description: (this.description ?? '').trim() || null,
+        startTime: this.ensureSeconds(this.startTimeInput),
+        endTime: this.ensureSeconds(this.endTimeInput),
+        questions: this.questions.map((q) => ({
+          title: q.title.trim(),
+          questionType: q.questionType,
+          isRequired: q.isRequired ?? 0,
+          sortOrder: q.sortOrder ?? 0,
+          options:
+            q.questionType === 'text'
+              ? []
+              : q.options.map((o) => ({
+                  optionText: o.optionText.trim(),
+                  sortOrder: o.sortOrder ?? 0,
+                })),
+        })),
+      };
+
+      this.loading = true;
+      this.adminService.createFullQuestionnaire(fullPayload).subscribe({
+        next: (res: any) => {
+          this.loading = false;
+          if (res?.code !== 200) return alert(res?.message || '新增失敗');
+
+          const newId = res?.data?.id;
+          this.router.navigate(['/admin/surveys', newId, 'preview']);
+        },
+        error: (err: any) => {
+          this.loading = false;
+          const msg = typeof err?.error === 'string' ? err.error : '新增失敗';
+          alert(msg);
+        },
+      });
+
       return;
     }
 
-    const survey: Survey = {
-      id: this.id,
+    // ===== 編輯：只改基本資料 =====
+    const payload: Partial<QuestionnaireDto> = {
       title: this.title.trim(),
-      description: this.description.trim(),
-      startDate: this.startDate,
-      endDate: this.endDate,
-      questions: [this.buildFirstQuestion()],
+      description: (this.description ?? '').trim() || null,
+      isPublished: this.isPublished,
+      startTime: this.ensureSeconds(this.startTimeInput),
+      endTime: this.ensureSeconds(this.endTimeInput),
     };
 
-    this.surveyService.upsertSurvey(survey);
-    this.router.navigate(['/admin/surveys']);
+    this.loading = true;
+    this.adminService.updateQuestionnaire(this.id!, payload).subscribe({
+      next: () => {
+        this.loading = false;
+        this.router.navigate(['/admin/surveys']);
+      },
+      error: () => {
+        this.loading = false;
+        alert('更新失敗');
+      },
+    });
   }
 
-  private buildFirstQuestion() {
-    if (this.qType === 'text') {
-      return { id: 'q1', text: this.qText.trim(), type: 'text' as const };
-    }
-    return {
-      id: 'q1',
-      text: this.qText.trim(),
-      type: this.qType,
-      options: [
-        { id: 'o1', text: this.op1.trim() || '選項1' },
-        { id: 'o2', text: this.op2.trim() || '選項2' },
-        { id: 'o3', text: this.op3.trim() || '選項3' },
-      ],
-    };
+  // ===== helpers =====
+  private ensureSeconds(v: string) {
+    return v.length === 16 ? `${v}:00` : v;
+  }
+
+  private stripSeconds(v: string) {
+    return v ? v.slice(0, 16) : '';
+  }
+
+  private toDatetimeLocal(d: Date) {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 }

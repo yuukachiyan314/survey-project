@@ -1,57 +1,106 @@
-<h2>後台｜{{ isNew ? '新增問卷' : '修改問卷' }}</h2>
+<div class="page">
+  <div class="card">
+    <div class="h1">後台｜{{ isNew ? '新增問卷' : '編輯問卷' }}</div>
 
-<div style="max-width: 640px;">
-  <p>
-    <a routerLink="/admin/surveys">← 回後台清單</a>
-  </p>
+    <div class="actions">
+      <a class="link" routerLink="/admin/surveys">← 回列表</a>
+      <a class="link" *ngIf="!isNew && id" [routerLink]="['/admin/surveys', id, 'preview']">看預覽</a>
+    </div>
+  </div>
 
-  <div style="border:1px solid #ddd; padding:12px;">
+  <div class="card" style="max-width:720px;">
     <div style="margin:10px 0;">
-      <div>問卷標題</div>
-      <input style="width:100%;" [(ngModel)]="title" />
+      <label class="q-title">標題</label>
+      <input [(ngModel)]="title" style="width:100%; padding:10px 12px; border:1px solid #dcdcdc; border-radius:10px; outline:none;" />
     </div>
 
     <div style="margin:10px 0;">
-      <div>說明</div>
-      <textarea rows="2" style="width:100%;" [(ngModel)]="description"></textarea>
+      <label class="q-title">描述</label>
+      <textarea [(ngModel)]="description" rows="3"></textarea>
     </div>
 
-    <div style="margin:10px 0; display:flex; gap:12px;">
-      <div style="flex:1;">
-        <div>開始日期</div>
-        <input type="date" style="width:100%;" [(ngModel)]="startDate" />
+    <div style="margin:10px 0;">
+      <label class="q-title">開始時間</label><br />
+      <input type="datetime-local" [(ngModel)]="startTimeInput" style="padding:8px 10px; border:1px solid #dcdcdc; border-radius:10px;" />
+    </div>
+
+    <div style="margin:10px 0;">
+      <label class="q-title">結束時間</label><br />
+      <input type="datetime-local" [(ngModel)]="endTimeInput" style="padding:8px 10px; border:1px solid #dcdcdc; border-radius:10px;" />
+    </div>
+
+    <div style="margin:10px 0;">
+      <label>
+        <input type="checkbox"
+               [checked]="isPublished===1"
+               (change)="isPublished = $any($event.target).checked ? 1 : 0" />
+        發布
+      </label>
+
+      <div class="muted" *ngIf="isNew" style="margin-top:6px;">
+        提醒：儲存後僅可修改標題／描述與時間；題目內容僅能在新增時編輯。發布請回列表操作。
       </div>
-      <div style="flex:1;">
-        <div>結束日期</div>
-        <input type="date" style="width:100%;" [(ngModel)]="endDate" />
+    </div>
+
+    <hr class="hr" />
+
+    <!-- 新增模式：題目設計 -->
+    <div *ngIf="isNew">
+      <div class="q-title" style="font-size:18px;">題目設計</div>
+
+      <div *ngFor="let q of questions; let i = index" class="card q-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="q-title">第 {{ i + 1 }} 題</div>
+          <button class="btn" type="button" (click)="removeQuestion(i)">刪題</button>
+        </div>
+
+        <div style="margin:10px 0;">
+          <label class="muted">題目標題</label>
+          <input [(ngModel)]="q.title" style="width:100%; padding:10px 12px; border:1px solid #dcdcdc; border-radius:10px; outline:none;" />
+        </div>
+
+        <div style="margin:10px 0; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <div>
+            <label class="muted">題型</label><br />
+            <select [(ngModel)]="q.questionType" (change)="onTypeChange(i)"
+                    style="padding:8px 10px; border:1px solid #dcdcdc; border-radius:10px;">
+              <option value="single">單選</option>
+              <option value="multiple">複選</option>
+              <option value="text">簡答</option>
+            </select>
+          </div>
+
+          <label style="margin-top:18px;">
+            <input type="checkbox"
+                   [checked]="q.isRequired===1"
+                   (change)="q.isRequired = $any($event.target).checked ? 1 : 0" />
+            必填
+          </label>
+        </div>
+
+        <div *ngIf="q.questionType !== 'text'">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin:10px 0;">
+            <div class="q-title">選項</div>
+            <button class="btn" type="button" (click)="addOption(i)">＋新增選項</button>
+          </div>
+
+          <div *ngFor="let o of q.options; let j = index" class="option">
+            <input [(ngModel)]="o.optionText"
+                   style="flex:1; padding:10px 12px; border:1px solid #dcdcdc; border-radius:10px; outline:none;" />
+            <button class="btn" type="button" (click)="removeOption(i, j)">刪</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" type="button" (click)="addQuestion()">＋新增題目</button>
       </div>
     </div>
 
-    <hr />
-
-    <h3>題目 1（先做一題版本）</h3>
-
-    <div style="margin:10px 0;">
-      <div>題目文字</div>
-      <input style="width:100%;" [(ngModel)]="qText" />
+    <div class="actions">
+      <button class="btn btn-primary" type="button" (click)="save()" [disabled]="loading">
+        {{ loading ? '儲存中…' : '儲存' }}
+      </button>
     </div>
-
-    <div style="margin:10px 0;">
-      <div>題型</div>
-      <select [(ngModel)]="qType">
-        <option value="single">單選</option>
-        <option value="multiple">複選</option>
-        <option value="text">簡答</option>
-      </select>
-    </div>
-
-    <div *ngIf="qType !== 'text'" style="margin:10px 0;">
-      <div>選項（固定先 3 個）</div>
-      <div style="margin:6px 0;"><input style="width:100%;" [(ngModel)]="op1" /></div>
-      <div style="margin:6px 0;"><input style="width:100%;" [(ngModel)]="op2" /></div>
-      <div style="margin:6px 0;"><input style="width:100%;" [(ngModel)]="op3" /></div>
-    </div>
-
-    <button (click)="save()">儲存</button>
   </div>
 </div>

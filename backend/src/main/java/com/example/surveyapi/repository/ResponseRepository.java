@@ -7,5 +7,6 @@ import java.util.List;
 public interface ResponseRepository extends JpaRepository<Response, Long> {
 
     List<Response> findByQuestionnaireIdOrderByIdDesc(Long questionnaireId);
+    long countByQuestionnaireId(Long questionnaireId);
 
 }
