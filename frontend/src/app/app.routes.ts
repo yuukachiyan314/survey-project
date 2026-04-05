@@ -16,8 +16,13 @@ export const routes: Routes = [
   { path: 'surveys/:id/confirm', component: SurveyConfirmComponent },
   { path: 'surveys/:id/done', component: SurveyDoneComponent },
   { path: 'surveys/:id/results', component: SurveyResultsComponent },
+
   { path: 'admin/surveys', component: AdminSurveyListComponent },
   { path: 'admin/surveys/new', component: AdminSurveyEditComponent },
   { path: 'admin/surveys/:id/edit', component: AdminSurveyEditComponent },
+
+  // ✅ 題目設計（編輯題目）
+  { path: 'admin/surveys/:id/questions', component: AdminSurveyEditComponent },
+
   { path: 'admin/surveys/:id/preview', component: AdminSurveyPreviewComponent },
 ];

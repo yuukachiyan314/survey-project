@@ -1,9 +1,14 @@
 <div class="page">
   <div class="card">
-    <div class="h1">後台｜{{ isNew ? '新增問卷' : '編輯問卷' }}</div>
+    <div class="h1">
+      後台｜{{ isNew ? '新增問卷' : (isQuestionsMode ? '編輯題目' : '編輯問卷') }}
+    </div>
 
     <div class="actions">
       <a class="link" routerLink="/admin/surveys">← 回列表</a>
+
+      <a class="link" *ngIf="!isNew && id" [routerLink]="['/admin/surveys', id, 'edit']">基本資料</a>
+      <a class="link" *ngIf="!isNew && id" [routerLink]="['/admin/surveys', id, 'questions']">題目設計</a>
       <a class="link" *ngIf="!isNew && id" [routerLink]="['/admin/surveys', id, 'preview']">看預覽</a>
     </div>
   </div>
@@ -11,7 +16,8 @@
   <div class="card" style="max-width:720px;">
     <div style="margin:10px 0;">
       <label class="q-title">標題</label>
-      <input [(ngModel)]="title" style="width:100%; padding:10px 12px; border:1px solid #dcdcdc; border-radius:10px; outline:none;" />
+      <input [(ngModel)]="title"
+             style="width:100%; padding:10px 12px; border:1px solid #dcdcdc; border-radius:10px; outline:none;" />
     </div>
 
     <div style="margin:10px 0;">
@@ -21,12 +27,14 @@
 
     <div style="margin:10px 0;">
       <label class="q-title">開始時間</label><br />
-      <input type="datetime-local" [(ngModel)]="startTimeInput" style="padding:8px 10px; border:1px solid #dcdcdc; border-radius:10px;" />
+      <input type="datetime-local" [(ngModel)]="startTimeInput"
+             style="padding:8px 10px; border:1px solid #dcdcdc; border-radius:10px;" />
     </div>
 
     <div style="margin:10px 0;">
       <label class="q-title">結束時間</label><br />
-      <input type="datetime-local" [(ngModel)]="endTimeInput" style="padding:8px 10px; border:1px solid #dcdcdc; border-radius:10px;" />
+      <input type="datetime-local" [(ngModel)]="endTimeInput"
+             style="padding:8px 10px; border:1px solid #dcdcdc; border-radius:10px;" />
     </div>
 
     <div style="margin:10px 0;">
@@ -36,16 +44,12 @@
                (change)="isPublished = $any($event.target).checked ? 1 : 0" />
         發布
       </label>
-
-      <div class="muted" *ngIf="isNew" style="margin-top:6px;">
-        提醒：儲存後僅可修改標題／描述與時間；題目內容僅能在新增時編輯。發布請回列表操作。
-      </div>
     </div>
 
     <hr class="hr" />
 
-    <!-- 新增模式：題目設計 -->
-    <div *ngIf="isNew">
+    <!-- ✅ 題目設計：new 或 /questions 才顯示 -->
+    <div *ngIf="isNew || isQuestionsMode">
       <div class="q-title" style="font-size:18px;">題目設計</div>
 
       <div *ngFor="let q of questions; let i = index" class="card q-card">
@@ -56,7 +60,8 @@
 
         <div style="margin:10px 0;">
           <label class="muted">題目標題</label>
-          <input [(ngModel)]="q.title" style="width:100%; padding:10px 12px; border:1px solid #dcdcdc; border-radius:10px; outline:none;" />
+          <input [(ngModel)]="q.title"
+                 style="width:100%; padding:10px 12px; border:1px solid #dcdcdc; border-radius:10px; outline:none;" />
         </div>
 
         <div style="margin:10px 0; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
@@ -90,6 +95,8 @@
             <button class="btn" type="button" (click)="removeOption(i, j)">刪</button>
           </div>
         </div>
+
+        <div *ngIf="q.questionType === 'text'" class="muted">（簡答題）</div>
       </div>
 
       <div class="actions">
@@ -98,9 +105,38 @@
     </div>
 
     <div class="actions">
-      <button class="btn btn-primary" type="button" (click)="save()" [disabled]="loading">
-        {{ loading ? '儲存中…' : '儲存' }}
-      </button>
-    </div>
+  <!-- 新增模式：建立整包 -->
+  <ng-container *ngIf="isNew">
+    <button class="btn btn-primary" type="button" (click)="save(false)" [disabled]="loading">
+      {{ loading ? '儲存中…' : '儲存草稿' }}
+    </button>
+
+    <button class="btn" type="button" (click)="save(true)" [disabled]="loading">
+      {{ loading ? '儲存中…' : '儲存並預覽' }}
+    </button>
+  </ng-container>
+
+  <!-- 編輯基本資料（/edit）：只改基本資料 -->
+  <ng-container *ngIf="!isNew && !isQuestionsMode">
+    <button class="btn btn-primary" type="button" (click)="save(false)" [disabled]="loading">
+      {{ loading ? '儲存中…' : '儲存' }}
+    </button>
+
+    <button class="btn" type="button" (click)="save(true)" [disabled]="loading">
+      {{ loading ? '儲存中…' : '儲存並預覽' }}
+    </button>
+  </ng-container>
+
+  <!-- 編輯題目（/questions）：一律走 full update，才會真的改到題目 -->
+  <ng-container *ngIf="!isNew && isQuestionsMode">
+    <button class="btn btn-primary" type="button" (click)="saveQuestions(false)" [disabled]="loading">
+      {{ loading ? '儲存中…' : '儲存題目' }}
+    </button>
+
+    <button class="btn" type="button" (click)="saveQuestions(true)" [disabled]="loading">
+      {{ loading ? '儲存中…' : '儲存題目並預覽' }}
+    </button>
+  </ng-container>
+</div>
   </div>
 </div>

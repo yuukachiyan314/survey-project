@@ -20,11 +20,19 @@
       狀態：<b>{{ s.isPublished === 1 ? '已發布' : '未發布' }}</b>
     </div>
 
-    <div class="actions">
-      <button class="btn" (click)="remove(s.id)">刪除</button>
-      <a class="link" [routerLink]="['/admin/surveys', s.id, 'edit']">編輯</a>
-      <a class="link" [routerLink]="['/admin/surveys', s.id, 'preview']">預覽</a>
-      <a class="link" [routerLink]="['/surveys', s.id, 'results']">看統計</a>
-    </div>
+<div class="actions">
+  <button class="btn" (click)="remove(s.id)">刪除</button>
+
+  <!-- ✅ 主要入口：直接去題目設計（你想要的「編輯」=改題目） -->
+  <a class="link" [routerLink]="['/admin/surveys', s.id, 'questions']">編輯</a>
+
+  <!-- ✅ 如果還要改標題/時間/發布，改叫「基本資料」避免誤會 -->
+  <a class="link" [routerLink]="['/admin/surveys', s.id, 'edit']">基本資料</a>
+
+  <a class="link" [routerLink]="['/admin/surveys', s.id, 'preview']">預覽</a>
+  <a class="link"
+   [routerLink]="['/surveys', s.id, 'results']"
+   [queryParams]="{ from: 'admin' }">看統計</a>
+</div>
   </div>
 </div>

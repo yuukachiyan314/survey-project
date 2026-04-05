@@ -3,7 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../data/admin.service';
-import { QuestionnaireDto } from '../../models/questionnaire.dto';
+import {
+  QuestionnaireDto,
+  QuestionnaireFullDto,
+} from '../../models/questionnaire.dto';
 
 type QuestionType = 'single' | 'multiple' | 'text';
 
@@ -17,6 +20,9 @@ export class AdminSurveyEditComponent implements OnInit {
   isNew = true;
   id?: number;
 
+  // ✅ 是否在「題目設計」頁
+  isQuestionsMode = false;
+
   title = '';
   description: string | null = null;
   isPublished = 0;
@@ -27,7 +33,7 @@ export class AdminSurveyEditComponent implements OnInit {
 
   loading = false;
 
-  // ===== 題目設計（只用在新增 new）=====
+  // ===== 題目設計 =====
   questions: {
     title: string;
     questionType: QuestionType;
@@ -44,21 +50,34 @@ export class AdminSurveyEditComponent implements OnInit {
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
+    const lastSeg = this.route.snapshot.url.at(-1)?.path; // 'new' | 'edit' | 'questions'
+
+    this.isQuestionsMode = lastSeg === 'questions';
 
     if (idParam) {
       this.isNew = false;
       this.id = Number(idParam);
-      this.load();
-    } else {
-      this.isNew = true;
 
-      const now = new Date();
-      this.startTimeInput = this.toDatetimeLocal(now);
-      this.endTimeInput = '2026-12-31T23:59';
-      this.isPublished = 0;
+      // 基本資料一定載入
+      this.loadBasic();
 
-      this.questions = [this.makeQuestion()];
+      // 題目設計頁：再載入 full 題目
+      if (this.isQuestionsMode) {
+        this.loadFullForQuestions();
+      }
+
+      return;
     }
+
+    // new 模式
+    this.isNew = true;
+
+    const now = new Date();
+    this.startTimeInput = this.toDatetimeLocal(now);
+    this.endTimeInput = '2026-12-31T23:59';
+    this.isPublished = 0;
+
+    this.questions = [this.makeQuestion()];
   }
 
   private makeQuestion() {
@@ -121,7 +140,8 @@ export class AdminSurveyEditComponent implements OnInit {
     });
   }
 
-  load() {
+  // ========= LOAD =========
+  private loadBasic() {
     if (!this.id) return;
 
     this.loading = true;
@@ -130,10 +150,8 @@ export class AdminSurveyEditComponent implements OnInit {
         this.title = q.title ?? '';
         this.description = q.description ?? null;
         this.isPublished = Number(q.isPublished ?? 0);
-
         this.startTimeInput = this.stripSeconds(q.startTime);
         this.endTimeInput = this.stripSeconds(q.endTime);
-
         this.loading = false;
       },
       error: () => {
@@ -143,7 +161,43 @@ export class AdminSurveyEditComponent implements OnInit {
     });
   }
 
-  save() {
+  private loadFullForQuestions() {
+    if (!this.id) return;
+
+    this.loading = true;
+    this.adminService.getFullQuestionnaire(this.id).subscribe({
+      next: (full: any) => {
+        // 基本資料
+        this.title = full?.title ?? '';
+        this.description = full?.description ?? null;
+        this.startTimeInput = this.stripSeconds(full?.startTime);
+        this.endTimeInput = this.stripSeconds(full?.endTime);
+
+        // 題目（照後端實際 key：isRequired / sortOrder / optionText）
+        this.questions = (full?.questions ?? []).map((q: any, idx: number) => ({
+          title: q?.title ?? '',
+          questionType: q?.questionType,
+          isRequired: Number(q?.isRequired ?? 0),
+          sortOrder: Number(q?.sortOrder ?? idx + 1),
+          options: (q?.options ?? []).map((o: any, j: number) => ({
+            optionText: o?.optionText ?? '',
+            sortOrder: Number(o?.sortOrder ?? j + 1),
+          })),
+        }));
+
+        this.reindex();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.loading = false;
+        alert('讀取題目失敗');
+      },
+    });
+  }
+
+  // ========= SAVE =========
+  save(goPreview = false) {
     if (!this.title.trim()) return alert('請填問卷標題');
     if (!this.startTimeInput || !this.endTimeInput)
       return alert('請填開始/結束時間');
@@ -154,12 +208,8 @@ export class AdminSurveyEditComponent implements OnInit {
 
       for (const q of this.questions) {
         if (!q.title.trim()) return alert('題目標題不能空白');
-        if (
-          q.questionType !== 'text' &&
-          (!q.options || q.options.length === 0)
-        ) {
+        if (q.questionType !== 'text' && (!q.options || q.options.length === 0))
           return alert('選擇題至少要有一個選項');
-        }
         if (q.questionType !== 'text') {
           for (const o of q.options) {
             if (!o.optionText.trim()) return alert('選項文字不能空白');
@@ -167,25 +217,7 @@ export class AdminSurveyEditComponent implements OnInit {
         }
       }
 
-      const fullPayload = {
-        title: this.title.trim(),
-        description: (this.description ?? '').trim() || null,
-        startTime: this.ensureSeconds(this.startTimeInput),
-        endTime: this.ensureSeconds(this.endTimeInput),
-        questions: this.questions.map((q) => ({
-          title: q.title.trim(),
-          questionType: q.questionType,
-          isRequired: q.isRequired ?? 0,
-          sortOrder: q.sortOrder ?? 0,
-          options:
-            q.questionType === 'text'
-              ? []
-              : q.options.map((o) => ({
-                  optionText: o.optionText.trim(),
-                  sortOrder: o.sortOrder ?? 0,
-                })),
-        })),
-      };
+      const fullPayload = this.buildFullPayloadForQuestions();
 
       this.loading = true;
       this.adminService.createFullQuestionnaire(fullPayload).subscribe({
@@ -194,7 +226,11 @@ export class AdminSurveyEditComponent implements OnInit {
           if (res?.code !== 200) return alert(res?.message || '新增失敗');
 
           const newId = res?.data?.id;
-          this.router.navigate(['/admin/surveys', newId, 'preview']);
+          if (!newId) return this.router.navigate(['/admin/surveys']);
+
+          if (goPreview)
+            return this.router.navigate(['/admin/surveys', newId, 'preview']);
+          return this.router.navigate(['/admin/surveys']);
         },
         error: (err: any) => {
           this.loading = false;
@@ -206,7 +242,7 @@ export class AdminSurveyEditComponent implements OnInit {
       return;
     }
 
-    // ===== 編輯：只改基本資料 =====
+    // ===== 編輯基本資料（edit / questions 都共用）=====
     const payload: Partial<QuestionnaireDto> = {
       title: this.title.trim(),
       description: (this.description ?? '').trim() || null,
@@ -219,13 +255,81 @@ export class AdminSurveyEditComponent implements OnInit {
     this.adminService.updateQuestionnaire(this.id!, payload).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate(['/admin/surveys']);
+
+        // ✅ 編輯模式支援「儲存並預覽」
+        if (goPreview)
+          return this.router.navigate(['/admin/surveys', this.id, 'preview']);
+
+        // 如果在 questions 頁，存完不要踢回列表，留在本頁
+        if (this.isQuestionsMode)
+          return this.router.navigate(['/admin/surveys', this.id, 'questions']);
+
+        return this.router.navigate(['/admin/surveys']);
       },
       error: () => {
         this.loading = false;
         alert('更新失敗');
       },
     });
+  }
+
+  saveQuestions(goPreview = true) {
+    if (this.isNew) return alert('新增模式請用「儲存草稿／儲存並預覽」');
+    if (!this.id) return;
+
+    if (!this.questions.length) return alert('沒有題目可更新');
+
+    // 題目卡控
+    for (const q of this.questions) {
+      if (!q.title.trim()) return alert('題目標題不能空白');
+      if (q.questionType !== 'text' && (!q.options || q.options.length === 0))
+        return alert('選擇題至少要有一個選項');
+      if (q.questionType !== 'text') {
+        for (const o of q.options) {
+          if (!o.optionText.trim()) return alert('選項文字不能空白');
+        }
+      }
+    }
+
+    const fullPayload = this.buildFullPayloadForQuestions();
+
+    this.loading = true;
+    this.adminService.updateFullQuestionnaire(this.id!, fullPayload).subscribe({
+      next: (res: any) => {
+        this.loading = false;
+        if (res?.code !== 200) return alert(res?.message || '更新題目失敗');
+
+        if (goPreview)
+          return this.router.navigate(['/admin/surveys', this.id, 'preview']);
+        // 不預覽就留在題目頁，避免你又找不到在哪改
+        return this.router.navigate(['/admin/surveys', this.id, 'questions']);
+      },
+      error: () => {
+        this.loading = false;
+        alert('更新題目失敗');
+      },
+    });
+  }
+  private buildFullPayloadForQuestions() {
+    return {
+      title: this.title.trim(),
+      description: (this.description ?? '').trim() || null,
+      startTime: this.ensureSeconds(this.startTimeInput),
+      endTime: this.ensureSeconds(this.endTimeInput),
+      questions: this.questions.map((q) => ({
+        title: q.title.trim(),
+        questionType: q.questionType,
+        isRequired: q.isRequired ?? 0,
+        sortOrder: q.sortOrder ?? 0,
+        options:
+          q.questionType === 'text'
+            ? []
+            : q.options.map((o) => ({
+                optionText: o.optionText.trim(),
+                sortOrder: o.sortOrder ?? 0,
+              })),
+      })),
+    };
   }
 
   // ===== helpers =====
@@ -239,6 +343,8 @@ export class AdminSurveyEditComponent implements OnInit {
 
   private toDatetimeLocal(d: Date) {
     const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
+      d.getDate(),
+    )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 }

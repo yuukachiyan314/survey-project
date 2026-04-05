@@ -25,7 +25,7 @@ export class SurveyResultsComponent {
   survey?: QuestionnaireFullDto;
   total = 0;
   loading = true;
-
+  isAdminFrom = false;
   // questionId -> (optionId -> count)
   counts: Record<string, Record<string, number>> = {};
   // questionId -> text answers
@@ -37,6 +37,9 @@ export class SurveyResultsComponent {
   ) {}
 
   ngOnInit() {
+    this.isAdminFrom =
+    this.route.snapshot.queryParamMap.get('from') === 'admin';
+
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!Number.isFinite(id) || id <= 0) {
       this.loading = false;
@@ -78,8 +81,8 @@ export class SurveyResultsComponent {
               const text = (ta.text || '').trim();
               if (text) this.texts[qid].push(text);
             }
-             this.loading = false;
-             setTimeout(() => this.drawCharts(), 50);
+            this.loading = false;
+            setTimeout(() => this.drawCharts(), 50);
           },
           error: (err) => {
             console.error(err);

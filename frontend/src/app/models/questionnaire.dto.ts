@@ -10,6 +10,22 @@ export interface QuestionnaireDto {
 }
 export type QuestionType = 'single' | 'multiple' | 'text';
 
+
+export type OptionUpsertReq = Omit<OptionDto, 'id'>;
+
+export type QuestionUpsertReq = Omit<QuestionDto, 'id' | 'options'> & {
+  options: OptionUpsertReq[];
+};
+
+export type QuestionnaireFullUpsertReq = Omit<
+  QuestionnaireFullDto,
+  'id' | 'questions'
+> & {
+  questions: QuestionUpsertReq[];
+};
+
+
+
 export interface OptionDto {
   id: number;
   optionText: string;

@@ -33,10 +33,16 @@
     </div>
   </div>
 
+  <a class="link" *ngIf="isAdminFrom; else backUser" routerLink="/admin/surveys">回問卷管理</a>
+<ng-template #backUser>
   <a class="link" routerLink="/surveys">回問卷清單</a>
+</ng-template>
 </div>
 
 <ng-template #notFound>
   <p>找不到這份問卷。</p>
+  <a class="link" *ngIf="isAdminFrom; else backUser" routerLink="/admin/surveys">回問卷管理</a>
+<ng-template #backUser>
   <a class="link" routerLink="/surveys">回問卷清單</a>
+</ng-template>
 </ng-template>

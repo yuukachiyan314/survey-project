@@ -6,4 +6,5 @@ import com.example.surveyapi.entity.Question;
 
 public interface QuestionRepository extends JpaRepository<Question, Long> {
     List<Question> findByQuestionnaireIdOrderBySortOrderAsc(Long questionnaireId);
+    void deleteByQuestionnaireId(Long questionnaireId);
 }

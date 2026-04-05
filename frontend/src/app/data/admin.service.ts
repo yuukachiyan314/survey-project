@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { QuestionnaireDto } from '../models/questionnaire.dto';
+import {
+  QuestionnaireDto,
+  QuestionnaireFullDto,
+  QuestionnaireFullUpsertReq,
+} from '../models/questionnaire.dto';
 
 export interface AppResponse<T> {
   code: number;
   message: string;
-  data: T;
+  data: T | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -21,6 +25,11 @@ export class AdminService {
 
   getQuestionnaire(id: number): Observable<QuestionnaireDto> {
     return this.http.get<QuestionnaireDto>(`${this.baseUrl}/${id}`);
+  }
+
+  // ✅ 取得整包（含題目）
+  getFullQuestionnaire(id: number): Observable<QuestionnaireFullDto> {
+    return this.http.get<QuestionnaireFullDto>(`${this.baseUrl}/${id}/full`);
   }
 
   createQuestionnaire(
@@ -40,8 +49,24 @@ export class AdminService {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 
-  // ✅ 管理者整包新增（含題目/選項，回 AppResponse）
-  createFullQuestionnaire(payload: any): Observable<AppResponse<any>> {
-    return this.http.post<AppResponse<any>>(`${this.baseUrl}/full`, payload);
+  // ✅ 新增整包（full-create）
+  createFullQuestionnaire(
+    payload: QuestionnaireFullUpsertReq,
+  ): Observable<AppResponse<QuestionnaireFullDto>> {
+    return this.http.post<AppResponse<QuestionnaireFullDto>>(
+      `${this.baseUrl}/full`,
+      payload,
+    );
+  }
+
+  // ✅ 更新整包（responses=0 才會成功）
+  updateFullQuestionnaire(
+    id: number,
+    payload: QuestionnaireFullUpsertReq,
+  ): Observable<AppResponse<QuestionnaireFullDto>> {
+    return this.http.put<AppResponse<QuestionnaireFullDto>>(
+      `${this.baseUrl}/${id}/full`,
+      payload,
+    );
   }
 }
