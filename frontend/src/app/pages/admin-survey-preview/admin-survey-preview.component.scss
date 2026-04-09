@@ -1,0 +1,28 @@
+
+.toolbar-actions{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+
+.q-card{
+  background: #fffaf2;
+  margin-top: 14px;
+}
+
+.q-meta{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+
+.q-no{
+  font-weight:700;
+  color: var(--gold-dark);
+  font-size:13px;
+  letter-spacing:.04em;
+}

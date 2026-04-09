@@ -2,37 +2,43 @@
   <div class="card">
     <div class="h1">後台｜問卷管理</div>
 
-    <div class="actions">
-      <a class="link" routerLink="/surveys">去前台問卷清單</a>
-      <a class="link" routerLink="/admin/surveys/new">＋ 新增問卷</a>
+    <div class="toolbar-actions">
+      <a class="btn btn-ghost" routerLink="/surveys">去前台問卷清單</a>
+      <a class="btn btn-primary" routerLink="/admin/surveys/new">＋ 新增問卷</a>
     </div>
   </div>
 
-  <div *ngFor="let s of surveys" class="card">
-    <div class="q-title" style="font-size:18px;">{{ s.title }}</div>
-    <div class="muted" *ngIf="s.description">{{ s.description }}</div>
+  <div *ngFor="let s of surveys" class="card survey-card">
+    <div class="survey-row">
+      <div class="survey-main">
+        <div class="q-title survey-title">{{ s.title }}</div>
+        <div class="muted survey-desc" *ngIf="s.description">{{ s.description }}</div>
+      </div>
 
-    <div class="muted">
-      期間：{{ s.startTime | date:'yyyy-MM-dd HH:mm' }} ～ {{ s.endTime | date:'yyyy-MM-dd HH:mm' }}
+      <div class="survey-side">
+        <div class="survey-time-label">期間</div>
+        <div class="survey-time">
+          {{ s.startTime | date:'yyyy-MM-dd HH:mm' }}<br>
+          ～ {{ s.endTime | date:'yyyy-MM-dd HH:mm' }}
+        </div>
+
+        <div class="status-badge" [class.published]="s.isPublished === 1">
+          {{ s.isPublished === 1 ? '已發布' : '未發布' }}
+        </div>
+      </div>
     </div>
 
-    <div class="muted">
-      狀態：<b>{{ s.isPublished === 1 ? '已發布' : '未發布' }}</b>
+    <div class="card-actions">
+      <button class="btn btn-danger-soft" (click)="remove(s.id)">刪除</button>
+
+      <div class="inline-links">
+        <a class="action-link" [routerLink]="['/admin/surveys', s.id, 'questions']">編輯</a>
+        <a class="action-link" [routerLink]="['/admin/surveys', s.id, 'edit']">基本資料</a>
+        <a class="action-link" [routerLink]="['/admin/surveys', s.id, 'preview']">預覽</a>
+        <a class="action-link"
+           [routerLink]="['/surveys', s.id, 'results']"
+           [queryParams]="{ from: 'admin' }">看統計</a>
+      </div>
     </div>
-
-<div class="actions">
-  <button class="btn" (click)="remove(s.id)">刪除</button>
-
-  <!-- ✅ 主要入口：直接去題目設計（你想要的「編輯」=改題目） -->
-  <a class="link" [routerLink]="['/admin/surveys', s.id, 'questions']">編輯</a>
-
-  <!-- ✅ 如果還要改標題/時間/發布，改叫「基本資料」避免誤會 -->
-  <a class="link" [routerLink]="['/admin/surveys', s.id, 'edit']">基本資料</a>
-
-  <a class="link" [routerLink]="['/admin/surveys', s.id, 'preview']">預覽</a>
-  <a class="link"
-   [routerLink]="['/surveys', s.id, 'results']"
-   [queryParams]="{ from: 'admin' }">看統計</a>
-</div>
   </div>
 </div>

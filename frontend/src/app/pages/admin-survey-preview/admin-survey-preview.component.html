@@ -2,12 +2,12 @@
   <div class="card">
     <div class="h1">後台｜問卷預覽</div>
 
-    <div class="actions">
-      <a class="link" [routerLink]="['/admin/surveys', id, 'edit']">← 回去設定發布／基本資料</a>
-      <a class="link" [routerLink]="['/admin/surveys', id, 'questions']">← 回去修改題目</a>
-      <a class="link" routerLink="/admin/surveys">回問卷列表</a>
-      <a class="link" [routerLink]="['/surveys', id]">前台預覽</a>
-    </div>
+ <div class="toolbar-actions">
+  <a class="btn btn-ghost" [routerLink]="['/admin/surveys', id, 'edit']">基本資料</a>
+  <a class="btn btn-ghost" [routerLink]="['/admin/surveys', id, 'questions']">修改題目</a>
+  <a class="btn btn-ghost" routerLink="/admin/surveys">回問卷列表</a>
+  <a class="btn btn-primary" [routerLink]="['/surveys', id]">前台預覽</a>
+</div>
 
     <div *ngIf="loading" class="muted">載入中…</div>
   </div>

@@ -4,139 +4,134 @@
       後台｜{{ isNew ? '新增問卷' : (isQuestionsMode ? '編輯題目' : '編輯問卷') }}
     </div>
 
-    <div class="actions">
-      <a class="link" routerLink="/admin/surveys">← 回列表</a>
-
-      <a class="link" *ngIf="!isNew && id" [routerLink]="['/admin/surveys', id, 'edit']">基本資料</a>
-      <a class="link" *ngIf="!isNew && id" [routerLink]="['/admin/surveys', id, 'questions']">題目設計</a>
-      <a class="link" *ngIf="!isNew && id" [routerLink]="['/admin/surveys', id, 'preview']">看預覽</a>
+    <div class="toolbar-actions">
+      <a class="btn btn-ghost" routerLink="/admin/surveys">回列表</a>
+      <a class="btn btn-ghost" *ngIf="!isNew && id" [routerLink]="['/admin/surveys', id, 'edit']">基本資料</a>
+      <a class="btn btn-ghost" *ngIf="!isNew && id" [routerLink]="['/admin/surveys', id, 'questions']">題目設計</a>
+      <a class="btn btn-primary" *ngIf="!isNew && id" [routerLink]="['/admin/surveys', id, 'preview']">看預覽</a>
     </div>
   </div>
 
-  <div class="card" style="max-width:720px;">
-    <div style="margin:10px 0;">
-      <label class="q-title">標題</label>
-      <input [(ngModel)]="title"
-             style="width:100%; padding:10px 12px; border:1px solid #dcdcdc; border-radius:10px; outline:none;" />
-    </div>
+  <div class="card form-card">
+    <div class="section-title">基本資料</div>
 
-    <div style="margin:10px 0;">
-      <label class="q-title">描述</label>
-      <textarea [(ngModel)]="description" rows="3"></textarea>
-    </div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label class="form-label">標題</label>
+        <input class="input" [(ngModel)]="title" />
+      </div>
 
-    <div style="margin:10px 0;">
-      <label class="q-title">開始時間</label><br />
-      <input type="datetime-local" [(ngModel)]="startTimeInput"
-             style="padding:8px 10px; border:1px solid #dcdcdc; border-radius:10px;" />
-    </div>
+      <div class="form-group full">
+        <label class="form-label">描述</label>
+        <textarea class="textarea" [(ngModel)]="description" rows="4"></textarea>
+      </div>
 
-    <div style="margin:10px 0;">
-      <label class="q-title">結束時間</label><br />
-      <input type="datetime-local" [(ngModel)]="endTimeInput"
-             style="padding:8px 10px; border:1px solid #dcdcdc; border-radius:10px;" />
-    </div>
+      <div class="form-group">
+        <label class="form-label">開始時間</label>
+        <input class="datetime" type="datetime-local" [(ngModel)]="startTimeInput" />
+      </div>
 
-    <div style="margin:10px 0;">
-      <label>
-        <input type="checkbox"
-               [checked]="isPublished===1"
-               (change)="isPublished = $any($event.target).checked ? 1 : 0" />
-        發布
-      </label>
+      <div class="form-group">
+        <label class="form-label">結束時間</label>
+        <input class="datetime" type="datetime-local" [(ngModel)]="endTimeInput" />
+      </div>
+
+      <div class="form-group full">
+        <label class="check-line">
+          <input type="checkbox"
+                 [checked]="isPublished===1"
+                 (change)="isPublished = $any($event.target).checked ? 1 : 0" />
+          <span>發布</span>
+        </label>
+      </div>
     </div>
 
     <hr class="hr" />
 
-    <!-- ✅ 題目設計：new 或 /questions 才顯示 -->
-    <div *ngIf="isNew || isQuestionsMode">
-      <div class="q-title" style="font-size:18px;">題目設計</div>
+    <div *ngIf="isNew || isQuestionsMode" class="question-block">
+      <div class="section-title" style="font-size:20px;">題目設計</div>
 
-      <div *ngFor="let q of questions; let i = index" class="card q-card">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div class="q-title">第 {{ i + 1 }} 題</div>
-          <button class="btn" type="button" (click)="removeQuestion(i)">刪題</button>
+      <div *ngFor="let q of questions; let i = index" class="question-card">
+        <div class="question-head">
+          <div class="question-title">第 {{ i + 1 }} 題</div>
+          <div class="question-tools">
+            <button class="btn btn-danger-soft" type="button" (click)="removeQuestion(i)">刪題</button>
+          </div>
         </div>
 
-        <div style="margin:10px 0;">
-          <label class="muted">題目標題</label>
-          <input [(ngModel)]="q.title"
-                 style="width:100%; padding:10px 12px; border:1px solid #dcdcdc; border-radius:10px; outline:none;" />
+        <div class="form-group">
+          <label class="form-label">題目標題</label>
+          <input class="input" [(ngModel)]="q.title" />
         </div>
 
-        <div style="margin:10px 0; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-          <div>
-            <label class="muted">題型</label><br />
-            <select [(ngModel)]="q.questionType" (change)="onTypeChange(i)"
-                    style="padding:8px 10px; border:1px solid #dcdcdc; border-radius:10px;">
+        <div class="inline-row" style="margin-top:14px;">
+          <div class="form-group" style="min-width:140px;">
+            <label class="form-label">題型</label>
+            <select class="select" [(ngModel)]="q.questionType" (change)="onTypeChange(i)">
               <option value="single">單選</option>
               <option value="multiple">複選</option>
               <option value="text">簡答</option>
             </select>
           </div>
 
-          <label style="margin-top:18px;">
+          <label class="check-line" style="margin-bottom: 4px;">
             <input type="checkbox"
                    [checked]="q.isRequired===1"
                    (change)="q.isRequired = $any($event.target).checked ? 1 : 0" />
-            必填
+            <span>必填</span>
           </label>
         </div>
 
-        <div *ngIf="q.questionType !== 'text'">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin:10px 0;">
-            <div class="q-title">選項</div>
-            <button class="btn" type="button" (click)="addOption(i)">＋新增選項</button>
+        <div *ngIf="q.questionType !== 'text'" style="margin-top:16px;">
+          <div class="question-head" style="margin-bottom:10px;">
+            <div class="form-label">選項</div>
+            <button class="btn btn-ghost" type="button" (click)="addOption(i)">＋ 新增選項</button>
           </div>
 
-          <div *ngFor="let o of q.options; let j = index" class="option">
-            <input [(ngModel)]="o.optionText"
-                   style="flex:1; padding:10px 12px; border:1px solid #dcdcdc; border-radius:10px; outline:none;" />
-            <button class="btn" type="button" (click)="removeOption(i, j)">刪</button>
+          <div *ngFor="let o of q.options; let j = index" class="option-row">
+            <input class="input" [(ngModel)]="o.optionText" />
+            <button class="btn btn-danger-soft" type="button" (click)="removeOption(i, j)">刪</button>
           </div>
         </div>
 
-        <div *ngIf="q.questionType === 'text'" class="muted">（簡答題）</div>
+        <div *ngIf="q.questionType === 'text'" class="muted" style="margin-top:12px;">此題為簡答題</div>
       </div>
 
-      <div class="actions">
-        <button class="btn" type="button" (click)="addQuestion()">＋新增題目</button>
+      <div class="bottom-actions">
+        <button class="btn btn-ghost" type="button" (click)="addQuestion()">＋ 新增題目</button>
       </div>
     </div>
 
-    <div class="actions">
-  <!-- 新增模式：建立整包 -->
-  <ng-container *ngIf="isNew">
-    <button class="btn btn-primary" type="button" (click)="save(false)" [disabled]="loading">
-      {{ loading ? '儲存中…' : '儲存草稿' }}
-    </button>
+    <div class="bottom-actions">
+      <ng-container *ngIf="isNew">
+        <button class="btn btn-primary" type="button" (click)="save(false)" [disabled]="loading">
+          {{ loading ? '儲存中…' : '儲存草稿' }}
+        </button>
 
-    <button class="btn" type="button" (click)="save(true)" [disabled]="loading">
-      {{ loading ? '儲存中…' : '儲存並預覽' }}
-    </button>
-  </ng-container>
+        <button class="btn" type="button" (click)="save(true)" [disabled]="loading">
+          {{ loading ? '儲存中…' : '儲存並預覽' }}
+        </button>
+      </ng-container>
 
-  <!-- 編輯基本資料（/edit）：只改基本資料 -->
-  <ng-container *ngIf="!isNew && !isQuestionsMode">
-    <button class="btn btn-primary" type="button" (click)="save(false)" [disabled]="loading">
-      {{ loading ? '儲存中…' : '儲存' }}
-    </button>
+      <ng-container *ngIf="!isNew && !isQuestionsMode">
+        <button class="btn btn-primary" type="button" (click)="save(false)" [disabled]="loading">
+          {{ loading ? '儲存中…' : '儲存' }}
+        </button>
 
-    <button class="btn" type="button" (click)="save(true)" [disabled]="loading">
-      {{ loading ? '儲存中…' : '儲存並預覽' }}
-    </button>
-  </ng-container>
+        <button class="btn" type="button" (click)="save(true)" [disabled]="loading">
+          {{ loading ? '儲存中…' : '儲存並預覽' }}
+        </button>
+      </ng-container>
 
-  <!-- 編輯題目（/questions）：一律走 full update，才會真的改到題目 -->
-  <ng-container *ngIf="!isNew && isQuestionsMode">
-    <button class="btn btn-primary" type="button" (click)="saveQuestions(false)" [disabled]="loading">
-      {{ loading ? '儲存中…' : '儲存題目' }}
-    </button>
+      <ng-container *ngIf="!isNew && isQuestionsMode">
+        <button class="btn btn-primary" type="button" (click)="saveQuestions(false)" [disabled]="loading">
+          {{ loading ? '儲存中…' : '儲存題目' }}
+        </button>
 
-    <button class="btn" type="button" (click)="saveQuestions(true)" [disabled]="loading">
-      {{ loading ? '儲存中…' : '儲存題目並預覽' }}
-    </button>
-  </ng-container>
-</div>
+        <button class="btn" type="button" (click)="saveQuestions(true)" [disabled]="loading">
+          {{ loading ? '儲存中…' : '儲存題目並預覽' }}
+        </button>
+      </ng-container>
+    </div>
   </div>
 </div>
