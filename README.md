@@ -15,7 +15,19 @@ This project was built as a learning project to practice frontend-backend integr
 - **Version Control:** Git / GitHub
 
 ## Features
+## Screenshots
 
+### Admin Dashboard
+
+Survey management interface for creating, editing, previewing, and viewing survey results.
+
+![Admin Dashboard](docs/admin-dashboard.png)
+
+### Survey Results
+
+Survey statistics visualization using Chart.js, including pie charts, bar charts, and text responses.
+
+![Survey Results](docs/survey-results.png)
 ### User
 
 - Browse available surveys
