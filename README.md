@@ -54,7 +54,7 @@
 建立資料庫（schema）：
 - dynamic_surveys
 
-### 2) 後端設定（重要：密碼不上傳）
+### 2) 後端設定
 DB 密碼改成「只放本機」，不會 commit 到 GitHub。
 
 請在 `backend/src/main/resources/` 自己建立：
